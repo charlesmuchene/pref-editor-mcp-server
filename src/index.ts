@@ -13,38 +13,47 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-const DeviceSchema = {
-  deviceId: z.string().describe("The device's serial number."),
+const server = new McpServer(
+  {
+    name: "Pref-Editor",
+    version: "0.2.3",
+  },
+  {
+    capabilities: {
+      resources: {},
+      tools: {},
+    },
+  }
+);
+
+const deviceSchema = {
+  deviceId: z.string(),
 };
 
-const AppSchema = Object.assign(DeviceSchema, {
-  appId: z.string().describe("The application's package name."),
+const appSchema = Object.assign(deviceSchema, {
+  appId: z.string(),
 });
 
-const FileSchema = Object.assign(AppSchema, {
-  filename: z.string().describe("The filename with or without the extension."),
+const fileSchema = Object.assign(appSchema, {
+  filename: z.string(),
 });
 
-const PrefSchema = {
-  name: z.string().describe("The name/key of the user preference"),
-  value: z.string().describe("The value of user preference (as a string)"),
-  type: z
-    .string()
-    .describe(
-      "The type of the preference value: integer, boolean, float, double, long or string"
-    ),
+const prefSchema = {
+  name: z.string(),
+  value: z.string(),
+  type: z.string(),
 };
 
-const AddPrefSchema = {
-  ...PrefSchema,
-  ...FileSchema,
+const addPrefSchema = {
+  ...prefSchema,
+  ...fileSchema,
 };
 
-const EditPrefSchema = { ...AddPrefSchema };
+const editPrefSchema = { ...addPrefSchema };
 
-const DeletePrefSchema = {
-  name: z.string().describe("The name/key of the user preference"),
-  ...FileSchema,
+const deletePrefSchema = {
+  name: z.string(),
+  ...fileSchema,
 };
 
 const parseDataType = (type: string): TypeTag => {
@@ -56,22 +65,10 @@ const parseDataType = (type: string): TypeTag => {
   return result;
 };
 
-const server = new McpServer(
-  {
-    name: "Pref-Editor",
-    version: "0.2.4",
-  },
-  {
-    capabilities: {
-      tools: {},
-    },
-  }
-);
-
 server.tool(
   "change_preference",
-  "Changes the value of an existing preference",
-  EditPrefSchema,
+  "Changes the value of an existing preference. Requires the name, new value, data type (integer, boolean, float, double, long or string), device ID, app ID and filename.",
+  editPrefSchema,
   async ({ name, value, type, ...connection }) => {
     const pref: Preference = {
       value,
@@ -104,8 +101,8 @@ server.tool(
 
 server.tool(
   "delete_preference",
-  "Delete an existing preference",
-  DeletePrefSchema,
+  "Deletes an existing preference. Requires the preference name, device ID, app ID and filename.",
+  deletePrefSchema,
   async ({ name, ...connection }) => {
     try {
       await deletePreference({ key: name }, connection);
@@ -133,8 +130,8 @@ server.tool(
 
 server.tool(
   "add_preference",
-  "Adds a new preference given the name, value and type.",
-  AddPrefSchema,
+  "Adds a new preference given the name, value, data type (integer, boolean, float, double, long or string), device ID, app ID and filename.",
+  addPrefSchema,
   async ({ name, value, type, ...connection }) => {
     try {
       const pref: Preference = {
@@ -165,31 +162,35 @@ server.tool(
   }
 );
 
-server.tool("devices", "Lists connected Android devices", async () => {
-  try {
-    return {
-      content: (await listDevices()).map((device) => ({
-        type: "text",
-        text: device.serial,
-      })),
-    };
-  } catch (error) {
-    return {
-      isError: true,
-      content: [
-        {
+server.tool(
+  "list_devices",
+  "Lists connected Android devices and their serial numbers.",
+  async () => {
+    try {
+      return {
+        content: (await listDevices()).map((device) => ({
           type: "text",
-          text: error instanceof Error ? error.message : "Unknown error",
-        },
-      ],
-    };
+          text: device.serial,
+        })),
+      };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: error instanceof Error ? error.message : "Unknown error",
+          },
+        ],
+      };
+    }
   }
-});
+);
 
 server.tool(
   "list_apps",
-  "Lists apps installed on device",
-  DeviceSchema,
+  "Lists apps installed on a specific device. Requires the device ID.",
+  deviceSchema,
   async ({ deviceId }) => {
     try {
       return {
@@ -214,8 +215,8 @@ server.tool(
 
 server.tool(
   "list_files",
-  "Lists preference files for an app",
-  AppSchema,
+  "Lists preference files for a specific app on a device. Requires the device ID and app ID.",
+  appSchema,
   async (connection) => {
     try {
       return {
@@ -240,8 +241,8 @@ server.tool(
 
 server.tool(
   "read_preferences",
-  "Reads all user preferences in a file",
-  FileSchema,
+  "Reads all user preferences in a specific file. Requires the device ID, app ID and filename.",
+  fileSchema,
   async (connection) => {
     try {
       return {
