@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/charlesmuchene-pref-editor-mcp-server-badge.png)](https://mseep.ai/app/charlesmuchene-pref-editor-mcp-server)
+
 # Android-Preference-Editor MCP Server
 
 ![MCP Server integration](./demo/ai-flow.png)
