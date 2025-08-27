@@ -18,7 +18,10 @@
     "dev": "ts-node src/index.ts",
     "prepare": "npm run build",
     "watch": "tsc --watch",
-    "lint": "eslint src/ --ext .ts"
+    "lint": "eslint src/ --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "author": "Charles Muchene <muchene.kazi@gmail.com> (https://charlesmuchene.com)",
   "repository": {
@@ -37,10 +40,13 @@
     "@types/node": "^24.3.0",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
     "@typescript-eslint/parser": "^8.41.0",
+    "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.34.0",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vitest": "^3.2.4",
+    "zod": "^3.25.76"
   },
   "dependencies": {
     "@charlesmuchene/pref-editor": "^0.6.4",
