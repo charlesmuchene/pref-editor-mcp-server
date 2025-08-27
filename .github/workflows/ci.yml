@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
 
     strategy:
       matrix:
@@ -64,3 +66,126 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
+
+      - name: Comment on PR failure
+        if: failure() && github.event_name == 'pull_request' && matrix.node-version == '20.x'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const runId = context.runId;
+            const nodeVersion = '${{ matrix.node-version }}';
+            
+            // Get the workflow run to check which step failed
+            const workflowRun = await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId
+            });
+            
+            // Get jobs for this workflow run
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId
+            });
+            
+            // Find the failed job for this node version
+            const failedJob = jobs.data.jobs.find(job => 
+              job.conclusion === 'failure' && job.name.includes(nodeVersion)
+            );
+            
+            let failureReason = 'Unknown failure';
+            let suggestions = '';
+            
+            if (failedJob) {
+              // Analyze which step failed based on the job steps
+              const failedSteps = failedJob.steps.filter(step => step.conclusion === 'failure');
+              
+              if (failedSteps.length > 0) {
+                const failedStep = failedSteps[0];
+                
+                switch (failedStep.name) {
+                  case 'Validate PR title':
+                    failureReason = 'PR title format is invalid';
+                    suggestions = `Please update your PR title to start with one of:
+            - \`major:\` for breaking changes
+            - \`minor:\` for new features  
+            - \`patch:\` for bug fixes
+            
+            **Examples:**
+            - \`major: Remove deprecated API endpoints\`
+            - \`minor: Add new preference validation feature\`
+            - \`patch: Fix memory leak in connection handling\``;
+                    break;
+                    
+                  case 'Run linter':
+                    failureReason = 'Linting errors found';
+                    suggestions = `Please fix the linting errors:
+            - Run \`npm run lint\` locally to see the issues
+            - Use \`npm run lint -- --fix\` to auto-fix some issues
+            - Check the CI logs for specific error details`;
+                    break;
+                    
+                  case 'Build project':
+                    failureReason = 'Build compilation failed';
+                    suggestions = `Please fix the build errors:
+            - Run \`npm run build\` locally to reproduce the issue
+            - Check for TypeScript compilation errors
+            - Ensure all imports and types are correct`;
+                    break;
+                    
+                  case 'Run tests':
+                    failureReason = 'Tests are failing';
+                    suggestions = `Please fix the failing tests:
+            - Run \`npm test\` locally to see which tests fail
+            - Check the test output in the CI logs
+            - Update tests if you changed functionality`;
+                    break;
+                    
+                  case 'Run tests with coverage':
+                    failureReason = 'Test coverage is below 80% threshold';
+                    suggestions = `Please improve test coverage:
+            - Run \`npm run test:coverage\` locally to see coverage report
+            - Add tests for uncovered code paths
+            - Ensure all new code has adequate test coverage`;
+                    break;
+                    
+                  default:
+                    failureReason = `Step "${failedStep.name}" failed`;
+                    suggestions = 'Please check the CI logs for more details and run the verification locally with `npm run verify`.';
+                }
+              }
+            }
+            
+            const comment = `## ❌ CI Failed (Node.js ${nodeVersion})
+            
+**Failure Reason:** ${failureReason}
+
+${suggestions}
+
+---
+**Quick Fix Commands:**
+\`\`\`bash
+# Run full verification locally
+npm run verify
+
+# Or run individual steps
+npm run lint
+npm run build  
+npm test
+npm run test:coverage
+\`\`\`
+
+**CI Logs:** [View full logs](${workflowRun.data.html_url})
+
+Once you've fixed the issues, push your changes and the CI will run again automatically.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: comment
+            });
+            
+            console.log(`Posted failure comment to PR #${prNumber}`);
