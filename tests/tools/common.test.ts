@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { configureCommonTools } from "../src/tools/common";
+import { configureCommonTools } from "../../src/tools/common";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 // Mock the external dependencies
@@ -10,7 +10,7 @@ vi.mock("@charlesmuchene/pref-editor", () => ({
   readPreferences: vi.fn(),
 }));
 
-vi.mock("../src/utils.js", () => ({
+vi.mock("../../src/utils.js", () => ({
   validate: vi.fn(),
 }));
 
@@ -20,7 +20,7 @@ import {
   listFiles,
   readPreferences,
 } from "@charlesmuchene/pref-editor";
-import { validate } from "../src/utils.js";
+import { validate } from "../../src/utils.js";
 
 describe("common.ts", () => {
   let mockServer: McpServer;

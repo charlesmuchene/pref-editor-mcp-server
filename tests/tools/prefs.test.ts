@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { configurePreferenceTools } from "../src/tools/prefs";
+import { configurePreferenceTools } from "../../src/tools/prefs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { TypeTag } from "@charlesmuchene/pref-editor";
 
@@ -18,7 +18,7 @@ vi.mock("@charlesmuchene/pref-editor", () => ({
   },
 }));
 
-vi.mock("../src/utils.js", () => ({
+vi.mock("../../src/utils.js", () => ({
   validate: vi.fn(),
   parseDataType: vi.fn(),
 }));
@@ -28,7 +28,7 @@ import {
   deletePreference,
   addPreference,
 } from "@charlesmuchene/pref-editor";
-import { validate, parseDataType } from "../src/utils.js";
+import { validate, parseDataType } from "../../src/utils.js";
 
 describe("prefs.ts", () => {
   let mockServer: McpServer;
