@@ -18,6 +18,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Validate PR title
+        if: github.event_name == 'pull_request'
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "Validating PR title: $PR_TITLE"
+
+          if [[ "$PR_TITLE" =~ ^(major|minor|patch): ]]; then
+            echo "✅ PR title format is valid"
+          else
+            echo "❌ PR title must start with 'major:', 'minor:', or 'patch:'"
+            echo "Examples:"
+            echo "  - major: Remove deprecated API endpoints"
+            echo "  - minor: Add new preference validation feature"
+            echo "  - patch: Fix memory leak in connection handling"
+            exit 1
+          fi
+
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
