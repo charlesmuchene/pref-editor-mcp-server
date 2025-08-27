@@ -217,6 +217,26 @@ describe("common.ts", () => {
         content: [],
       });
     });
+
+    it("should handle non-Error exceptions", async () => {
+      const connection = { deviceId: "device123" };
+
+      vi.mocked(validate).mockImplementation(() => {});
+      vi.mocked(listApps).mockRejectedValue("String error");
+
+      const handler = toolHandlers.get("list_apps");
+      const result = await handler(connection);
+
+      expect(result).toEqual({
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: "Unknown error",
+          },
+        ],
+      });
+    });
   });
 
   describe("list_files tool", () => {
@@ -310,6 +330,26 @@ describe("common.ts", () => {
 
       expect(result).toEqual({
         content: [],
+      });
+    });
+
+    it("should handle non-Error exceptions", async () => {
+      const connection = { deviceId: "device123", appId: "com.example.app" };
+
+      vi.mocked(validate).mockImplementation(() => {});
+      vi.mocked(listFiles).mockRejectedValue("String error");
+
+      const handler = toolHandlers.get("list_files");
+      const result = await handler(connection);
+
+      expect(result).toEqual({
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: "Unknown error",
+          },
+        ],
       });
     });
   });
