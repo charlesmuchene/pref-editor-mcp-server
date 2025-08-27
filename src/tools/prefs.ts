@@ -8,13 +8,14 @@ import {
   Preference,
   addPreference,
 } from "@charlesmuchene/pref-editor";
+import { z } from "zod";
 
 export const configurePreferenceTools = (server: McpServer) => {
   server.tool(
     "change_preference",
     "Changes the value of an existing preference",
     EditPrefSchema.shape,
-    async (input: any) => {
+    async (input: z.infer<typeof EditPrefSchema>) => {
       try {
         validate(input, EditPrefSchema);
 
@@ -53,7 +54,7 @@ export const configurePreferenceTools = (server: McpServer) => {
     "delete_preference",
     "Delete an existing preference",
     DeletePrefSchema.shape,
-    async (input: any) => {
+    async (input: z.infer<typeof DeletePrefSchema>) => {
       try {
         validate(input, DeletePrefSchema);
 
@@ -87,7 +88,7 @@ export const configurePreferenceTools = (server: McpServer) => {
     "add_preference",
     "Adds a new preference given the name, value and type.",
     AddPrefSchema.shape,
-    async (input: any) => {
+    async (input: z.infer<typeof AddPrefSchema>) => {
       try {
         validate(input, AddPrefSchema);
 

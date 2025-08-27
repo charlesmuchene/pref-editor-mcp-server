@@ -12,6 +12,7 @@ export default tseslint.config(
         "error",
         { argsIgnorePattern: "^_" },
       ],
+      "@typescript-eslint/no-explicit-any": "error", // Disallow any types
     },
   },
   {

@@ -7,6 +7,7 @@ import {
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { DeviceSchema, AppSchema, FileSchema } from "../schema.js";
 import { validate } from "../utils.js";
+import { z } from "zod";
 
 export const configureCommonTools = (server: McpServer) => {
   server.tool("devices", "Lists connected Android devices", async () => {
@@ -34,7 +35,7 @@ export const configureCommonTools = (server: McpServer) => {
     "list_apps",
     "Lists apps installed on device",
     DeviceSchema.shape,
-    async (connection: any) => {
+    async (connection: z.infer<typeof DeviceSchema>) => {
       try {
         validate(connection, DeviceSchema);
 
@@ -62,7 +63,7 @@ export const configureCommonTools = (server: McpServer) => {
     "list_files",
     "Lists preference files for an app",
     AppSchema.shape,
-    async (connection: any) => {
+    async (connection: z.infer<typeof AppSchema>) => {
       try {
         validate(connection, AppSchema);
 
@@ -90,7 +91,7 @@ export const configureCommonTools = (server: McpServer) => {
     "read_preferences",
     "Reads all user preferences in a file",
     FileSchema.shape,
-    async (connection: any) => {
+    async (connection: z.infer<typeof FileSchema>) => {
       try {
         validate(connection, FileSchema);
 
