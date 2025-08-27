@@ -36,3 +36,5 @@ build/
 # TypeScript build output
 *.js
 *.js.map
+
+coverage/**
