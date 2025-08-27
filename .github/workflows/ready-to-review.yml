@@ -14,6 +14,77 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Check CI status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            const headSha = context.payload.pull_request.head.sha;
+            
+            console.log(`Checking CI status for PR #${prNumber}, SHA: ${headSha}`);
+            
+            // Get all check runs for this commit
+            const checkRuns = await github.rest.checks.listForRef({
+              owner,
+              repo,
+              ref: headSha
+            });
+            
+            // Get all status checks for this commit
+            const statusChecks = await github.rest.repos.getCombinedStatusForRef({
+              owner,
+              repo,
+              ref: headSha
+            });
+            
+            console.log(`Found ${checkRuns.data.check_runs.length} check runs`);
+            console.log(`Combined status: ${statusChecks.data.state}`);
+            
+            // Look for CI workflow specifically
+            const ciCheckRuns = checkRuns.data.check_runs.filter(run => 
+              run.name.includes('test') || run.name.includes('CI')
+            );
+            
+            console.log(`CI-related check runs: ${ciCheckRuns.length}`);
+            
+            // Check if CI has completed and passed
+            let ciPassed = false;
+            let ciCompleted = false;
+            
+            if (ciCheckRuns.length > 0) {
+              // Check if all CI runs are completed
+              ciCompleted = ciCheckRuns.every(run => run.status === 'completed');
+              // Check if all completed CI runs passed
+              ciPassed = ciCheckRuns.every(run => 
+                run.status === 'completed' && run.conclusion === 'success'
+              );
+              
+              console.log(`CI completed: ${ciCompleted}, CI passed: ${ciPassed}`);
+              
+              // Log details of each CI run
+              ciCheckRuns.forEach(run => {
+                console.log(`- ${run.name}: ${run.status} (${run.conclusion})`);
+              });
+            } else {
+              // If no specific CI runs found, check overall status
+              ciCompleted = statusChecks.data.state !== 'pending';
+              ciPassed = statusChecks.data.state === 'success';
+              console.log(`No CI-specific runs found, using combined status: ${statusChecks.data.state}`);
+            }
+            
+            if (!ciCompleted) {
+              core.setFailed('❌ CI checks are still running. Please wait for CI to complete before marking as ready for review.');
+              return;
+            }
+            
+            if (!ciPassed) {
+              core.setFailed('❌ CI checks have failed. Please fix the issues before marking as ready for review.');
+              return;
+            }
+            
+            console.log('✅ All CI checks have passed');
+
       - name: Get CODEOWNERS
         id: codeowners
         run: |
