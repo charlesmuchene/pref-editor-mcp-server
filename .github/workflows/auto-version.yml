@@ -1,0 +1,85 @@
+name: Auto Version
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  auto-version:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "muchene.kazi@gmail.com"
+          git config --local user.name "Charles Muchene as a bot"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine version bump
+        id: version-type
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "PR Title: $PR_TITLE"
+
+          if [[ "$PR_TITLE" =~ ^major: ]] || [[ "$PR_TITLE" =~ ^MAJOR: ]]; then
+            echo "VERSION_TYPE=major" >> $GITHUB_OUTPUT
+            echo "Detected: MAJOR version bump"
+          elif [[ "$PR_TITLE" =~ ^minor: ]] || [[ "$PR_TITLE" =~ ^MINOR: ]]; then
+            echo "VERSION_TYPE=minor" >> $GITHUB_OUTPUT
+            echo "Detected: MINOR version bump"
+          elif [[ "$PR_TITLE" =~ ^patch: ]] || [[ "$PR_TITLE" =~ ^PATCH: ]]; then
+            echo "VERSION_TYPE=patch" >> $GITHUB_OUTPUT
+            echo "Detected: PATCH version bump"
+          else
+            echo "VERSION_TYPE=none" >> $GITHUB_OUTPUT
+            echo "No version bump detected - PR title must start with 'major:', 'minor:', or 'patch:'"
+          fi
+
+      - name: Run verification
+        if: steps.version-type.outputs.VERSION_TYPE != 'none'
+        run: npm run verify
+
+      - name: Bump version
+        if: steps.version-type.outputs.VERSION_TYPE != 'none'
+        run: |
+          npm version ${{ steps.version-type.outputs.VERSION_TYPE }} --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=v$NEW_VERSION" >> $GITHUB_ENV
+          echo "Bumped to version: v$NEW_VERSION"
+
+      - name: Commit version bump
+        if: steps.version-type.outputs.VERSION_TYPE != 'none'
+        run: |
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to ${{ env.NEW_VERSION }}"
+          git push origin main
+
+      - name: Create and push tag
+        if: steps.version-type.outputs.VERSION_TYPE != 'none'
+        run: |
+          git tag ${{ env.NEW_VERSION }}
+          git push origin ${{ env.NEW_VERSION }}
+          echo "Created and pushed tag: ${{ env.NEW_VERSION }}"
+
+      - name: Summary
+        if: steps.version-type.outputs.VERSION_TYPE != 'none'
+        run: |
+          echo "✅ Successfully created ${{ steps.version-type.outputs.VERSION_TYPE }} release: ${{ env.NEW_VERSION }}"
+          echo "🚀 Release workflow will be triggered automatically"
