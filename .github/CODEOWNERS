@@ -1,0 +1,7 @@
+# Global code owners - will be tagged for all changes
+* @charlesmuchene
+
+# Specific file patterns (add more as needed)
+# /src/tools/ @charlesmuchene
+# /.github/ @charlesmuchene
+# /tests/ @charlesmuchene
