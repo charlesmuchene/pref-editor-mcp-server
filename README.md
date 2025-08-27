@@ -170,3 +170,18 @@ See [LICENSE](./LICENSE)
 ## Contact
 
 For questions or support, reach out via [GitHub Issues](https://github.com/charlesmuchene/pref-editor-mcp-server/issues).
+
+## Contributing
+
+We welcome contributions from the community! 🎉
+
+**First-time contributors:** Please start by reading our [CONTRIBUTING.md](./CONTRIBUTING.md) guide, which covers:
+
+- PR requirements and title format
+- Development setup and workflow
+- Code quality standards
+- License information
+
+For detailed development instructions, see [DEV.md](./DEV.md).
+
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CONTRIBUTING.md)

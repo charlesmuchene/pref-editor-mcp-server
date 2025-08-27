@@ -38,6 +38,7 @@
 
 <!-- Confirm you've run the verification steps -->
 
+- [ ] I have read and followed the [CONTRIBUTING.md](../CONTRIBUTING.md) guidelines
 - [ ] `npm run verify` passes locally
 - [ ] Code follows project conventions
 - [ ] No lint errors or warnings
