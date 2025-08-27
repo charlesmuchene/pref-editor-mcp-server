@@ -49,6 +49,9 @@
     "vitest": "^3.2.4",
     "zod": "^3.25.76"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "@charlesmuchene/pref-editor": "^0.6.4",
     "@modelcontextprotocol/sdk": "^1.17.4"
