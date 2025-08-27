@@ -153,16 +153,7 @@ For more information, see the [VS Code documentation](https://code.visualstudio.
 
 ## Building Locally
 
-Clone the server and build.
-
-```sh
-# Clone the repository
-git clone https://github.com/charlesmuchene/pref-editor-mcp-server.git
-cd pref-editor-mcp-server
-
-# Install dependencies and build
-npm install
-```
+Refer to [DEV.md](./DEV.md) on how to build this project.
 
 ## Testing
 
