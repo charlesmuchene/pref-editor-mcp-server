@@ -51,7 +51,7 @@ jobs:
               '**Examples of valid titles:**\n' +
               '- `BREAKING: Remove deprecated tool` (breaking change → major version)\n' +
               '- `feat: Add new preference validation feature` (new features → minor version)\n' +
-              '- `fix: Fix memory leak in connection handling` (bug fixes → patch version)\n\n' +
+              '- `fix: Fix typo in tool description` (bug fixes → patch version)\n\n' +
               'Please edit your PR title and the CI will run again automatically.';
 
             await github.rest.issues.createComment({

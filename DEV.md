@@ -241,7 +241,7 @@ No manual intervention required! 🚀
 
 ```bash
 # Setup
-git clone <repo> && cd <repo> && npm install
+git clone https://github.com/charlesmuchene/pref-editor-mcp-server.git && cd pref-editor-mcp-server && npm install
 
 # Before PR
 npm run verify
