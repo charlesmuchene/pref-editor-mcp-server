@@ -34,16 +34,16 @@
     "shared-preferences"
   ],
   "devDependencies": {
-    "@types/node": "^24.2.1",
-    "@typescript-eslint/eslint-plugin": "^8.39.1",
-    "@typescript-eslint/parser": "^8.39.1",
-    "eslint": "^9.33.0",
+    "@types/node": "^24.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "eslint": "^9.34.0",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@charlesmuchene/pref-editor": "^0.6.3",
-    "@modelcontextprotocol/sdk": "^1.17.2"
+    "@charlesmuchene/pref-editor": "^0.6.4",
+    "@modelcontextprotocol/sdk": "^1.17.4"
   }
 }
